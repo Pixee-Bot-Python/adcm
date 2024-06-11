@@ -18,12 +18,17 @@ from cm.models import ClusterObject, ServiceComponent
 from cm.services.job.run.repo import JobRepoImpl
 from core.job.types import Task
 from core.types import ADCMCoreType, CoreObjectDescriptor
-from pydantic import BaseModel
 
-from ansible_plugin.base import ArgumentsConfig, PluginExecutorConfig, TargetConfig, from_objects
+from ansible_plugin.base import (
+    ArgumentsConfig,
+    BaseArgumentsWithTypedObjects,
+    PluginExecutorConfig,
+    TargetConfig,
+    from_objects,
+)
 
 
-class EmptyArguments(BaseModel):
+class EmptyArguments(BaseArgumentsWithTypedObjects):
     ...
 
 
@@ -197,7 +202,7 @@ class TestObjectsTargetsExtraction(BaseTestCase, BusinessLogicMixin, ADCMAnsible
         parent_cluster = self.cluster_1
         component = ServiceComponent.objects.filter(cluster=parent_cluster).first()
 
-        self.add_host_to_cluster(cluster_pk=parent_cluster.pk, host_pk=host.pk)
+        self.add_host_to_cluster(cluster=parent_cluster, host=host)
         self.set_hostcomponent(cluster=parent_cluster, entries=[(host, component)])
 
         self.check_target_detection(

@@ -13,62 +13,51 @@
 from contextlib import suppress
 from typing import Collection, TypedDict
 
-from cm.converters import core_type_to_model
 from cm.status_api import send_object_update_event
 from core.types import CoreObjectDescriptor
-from django.db.models import ObjectDoesNotExist
-from pydantic import BaseModel
 
 from ansible_plugin.base import (
     ADCMAnsiblePluginExecutor,
     ArgumentsConfig,
+    BaseTypedArguments,
     CallResult,
     PluginExecutorConfig,
     RuntimeEnvironment,
     TargetConfig,
     from_arguments_root,
+    retrieve_orm_object,
 )
-from ansible_plugin.errors import PluginTargetDetectionError
-from ansible_plugin.executors._validators import validate_target_allowed_for_context_owner, validate_type_is_present
+from ansible_plugin.executors._validators import validate_target_allowed_for_context_owner
 
 
-class ChangeStateArguments(BaseModel):
+class StateArguments(BaseTypedArguments):
     state: str
 
 
-class ChangeStateReturnValue(TypedDict):
+class StateReturnValue(TypedDict):
     state: str
 
 
-class ADCMStatePluginExecutor(ADCMAnsiblePluginExecutor[ChangeStateArguments, ChangeStateReturnValue]):
+class ADCMStatePluginExecutor(ADCMAnsiblePluginExecutor[StateArguments, StateReturnValue]):
     _config = PluginExecutorConfig(
-        arguments=ArgumentsConfig(represent_as=ChangeStateArguments),
-        target=TargetConfig(detectors=(from_arguments_root,), validators=(validate_type_is_present,)),
+        arguments=ArgumentsConfig(represent_as=StateArguments),
+        target=TargetConfig(detectors=(from_arguments_root,)),
     )
 
     def __call__(
         self,
         targets: Collection[CoreObjectDescriptor],
-        arguments: ChangeStateArguments,
+        arguments: StateArguments,
         runtime: RuntimeEnvironment,
-    ) -> CallResult[ChangeStateReturnValue]:
+    ) -> CallResult[StateReturnValue]:
         target, *_ = targets
 
         if error := validate_target_allowed_for_context_owner(context_owner=runtime.context_owner, target=target):
-            return CallResult(value={}, changed=False, error=error)
+            return CallResult(value=None, changed=False, error=error)
 
-        try:
-            target_object = core_type_to_model(core_type=target.type).objects.get(pk=target.id)
-        except ObjectDoesNotExist:
-            return CallResult(
-                value=None,
-                changed=False,
-                error=PluginTargetDetectionError(message=f'Failed to locate {target.type} with id "{target.id}"'),
-            )
-
+        target_object = retrieve_orm_object(object_=target)
         target_object.set_state(state=arguments.state)
-
         with suppress(Exception):
-            send_object_update_event(object_=target, changes={"state": arguments.state})
+            send_object_update_event(object_=target_object, changes={"state": arguments.state})
 
-        return CallResult(value=ChangeStateReturnValue(state=arguments.state), changed=True, error=None)
+        return CallResult(value=StateReturnValue(state=arguments.state), changed=True, error=None)
