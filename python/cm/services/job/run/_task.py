@@ -21,6 +21,7 @@ from cm.hierarchy import Tree
 from cm.issue import lock_affected_objects
 from cm.models import TaskLog
 from cm.utils import get_env_with_venv_path
+from security import safe_command
 
 logger = logging.getLogger("adcm")
 
@@ -50,7 +51,6 @@ def _run_task(task: TaskLog, command: Literal["start", "restart"]):
         str(task.pk),
     ]
     logger.info("task run cmd: %s", " ".join(cmd))
-    proc = subprocess.Popen(  # noqa: SIM115
-        args=cmd, stderr=err_file, env=get_env_with_venv_path(venv=task.action.venv)
+    proc = safe_command.run(subprocess.Popen, args=cmd, stderr=err_file, env=get_env_with_venv_path(venv=task.action.venv)
     )
     logger.info("task run #%s, python process %s", task.pk, proc.pid)
