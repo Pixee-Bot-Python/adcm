@@ -72,12 +72,12 @@ class Daemon:
 
         sys.stdout.flush()
         sys.stderr.flush()
-        stdin_file = open(self.stdin, encoding=settings.ENCODING_UTF_8)  # noqa: SIM115
-        stdout_file = open(self.stdout, "a+", encoding=settings.ENCODING_UTF_8)  # noqa: SIM115
-        stderr_file = open(self.stderr, "w+", encoding=settings.ENCODING_UTF_8)  # noqa: SIM115
-        os.dup2(stdin_file.fileno(), sys.stdin.fileno())
-        os.dup2(stdout_file.fileno(), sys.stdout.fileno())
-        os.dup2(stderr_file.fileno(), sys.stderr.fileno())
+        with open(self.stdin, encoding=settings.ENCODING_UTF_8) as stdin_file:
+            with open(self.stdout, "a+", encoding=settings.ENCODING_UTF_8) as stdout_file:
+                with open(self.stderr, "w+", encoding=settings.ENCODING_UTF_8) as stderr_file:
+                    os.dup2(stdin_file.fileno(), sys.stdin.fileno())
+                    os.dup2(stdout_file.fileno(), sys.stdout.fileno())
+                    os.dup2(stderr_file.fileno(), sys.stderr.fileno())
 
         atexit.register(self.delpid)
         pid = str(os.getpid())
