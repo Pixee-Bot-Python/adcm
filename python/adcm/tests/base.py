@@ -16,7 +16,6 @@ from pathlib import Path
 from shutil import rmtree
 from tempfile import mkdtemp
 from typing import Callable, Iterable
-import random
 import string
 import tarfile
 
@@ -63,6 +62,7 @@ from rbac.services.user import perform_user_creation
 from rbac.upgrade.role import init_roles
 from rest_framework.response import Response
 from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED
+import secrets
 
 APPLICATION_JSON = "application/json"
 
@@ -435,7 +435,7 @@ class BaseTestCase(TestCaseWithCommonSetUpTearDown, ParallelReadyTestCase, Bundl
 
     @staticmethod
     def get_random_str_num(length: int) -> str:
-        return "".join(random.sample(f"{string.ascii_letters}{string.digits}", length))
+        return "".join(secrets.SystemRandom().sample(f"{string.ascii_letters}{string.digits}", length))
 
 
 class BusinessLogicMixin(BundleLogicMixin):
