@@ -11,7 +11,6 @@
 # limitations under the License.
 
 from pathlib import Path
-import random
 
 from adcm.tests.base import BaseTestCase, BusinessLogicMixin
 from core.types import ADCMCoreType, CoreObjectDescriptor
@@ -32,6 +31,7 @@ from cm.models import (
     TaskLog,
 )
 from cm.services.concern.flags import BuiltInFlag, ConcernFlag, lower_all_flags, lower_flag, raise_flag
+import secrets
 
 
 class TestFlag(BaseTestCase, BusinessLogicMixin):
@@ -85,11 +85,11 @@ class TestFlag(BaseTestCase, BusinessLogicMixin):
         expected_name = flag.name
         expected_message = "${source} has a flag: " + flag.message
 
-        clusters = random.sample(tuple(Cluster.objects.all()), k=1)
-        services = random.sample(tuple(ClusterObject.objects.all()), k=2)
-        components = random.sample(tuple(ServiceComponent.objects.all()), k=3)
-        providers = random.sample(tuple(HostProvider.objects.all()), k=2)
-        hosts = random.sample(tuple(Host.objects.all()), k=1)
+        clusters = secrets.SystemRandom().sample(tuple(Cluster.objects.all()), k=1)
+        services = secrets.SystemRandom().sample(tuple(ClusterObject.objects.all()), k=2)
+        components = secrets.SystemRandom().sample(tuple(ServiceComponent.objects.all()), k=3)
+        providers = secrets.SystemRandom().sample(tuple(HostProvider.objects.all()), k=2)
+        hosts = secrets.SystemRandom().sample(tuple(Host.objects.all()), k=1)
 
         targets = (*clusters, *services, *components, *providers, *hosts)
         self.assertEqual(ConcernItem.objects.count(), 0)
@@ -127,11 +127,11 @@ class TestFlag(BaseTestCase, BusinessLogicMixin):
         flag_1 = ConcernFlag(name="awesome name", message="hi, I'm glad to see you ()}", cause=None)
         flag_2 = BuiltInFlag.ADCM_OUTDATED_CONFIG.value
 
-        clusters = cluster_1, cluster_2 = random.sample(tuple(Cluster.objects.all()), k=2)
-        services = service_1, service_2 = random.sample(tuple(ClusterObject.objects.all()), k=2)
-        components = component_1, component_2 = random.sample(tuple(ServiceComponent.objects.all()), k=2)
-        providers = provider_1, provider_2 = random.sample(tuple(HostProvider.objects.all()), k=2)
-        hosts = host_1, host_2 = random.sample(tuple(Host.objects.all()), k=2)
+        clusters = cluster_1, cluster_2 = secrets.SystemRandom().sample(tuple(Cluster.objects.all()), k=2)
+        services = service_1, service_2 = secrets.SystemRandom().sample(tuple(ClusterObject.objects.all()), k=2)
+        components = component_1, component_2 = secrets.SystemRandom().sample(tuple(ServiceComponent.objects.all()), k=2)
+        providers = provider_1, provider_2 = secrets.SystemRandom().sample(tuple(HostProvider.objects.all()), k=2)
+        hosts = host_1, host_2 = secrets.SystemRandom().sample(tuple(Host.objects.all()), k=2)
 
         self.assertEqual(ConcernItem.objects.count(), 0)
         targets = (cluster_1, service_1, service_2, component_2, provider_1, host_1)
@@ -160,9 +160,9 @@ class TestFlag(BaseTestCase, BusinessLogicMixin):
         self.assertEqual(ConcernItem.objects.filter(name=flag_2.name).count(), 6)
 
     def test_lower_flag_does_not_interfere_with_other_concerns_success(self) -> None:
-        clusters = cluster_1, cluster_2 = random.sample(tuple(Cluster.objects.all()), k=2)
-        components = component_1, component_2 = random.sample(tuple(ServiceComponent.objects.all()), k=2)
-        hosts = host_1, host_2 = random.sample(tuple(Host.objects.all()), k=2)
+        clusters = cluster_1, cluster_2 = secrets.SystemRandom().sample(tuple(Cluster.objects.all()), k=2)
+        components = component_1, component_2 = secrets.SystemRandom().sample(tuple(ServiceComponent.objects.all()), k=2)
+        hosts = host_1, host_2 = secrets.SystemRandom().sample(tuple(Host.objects.all()), k=2)
 
         dummy_job = JobLog(name="cool", task=TaskLog(id=10))
         for object_ in (*clusters, *components, *hosts):
