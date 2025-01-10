@@ -56,7 +56,7 @@ def api_request(method: str, url: str, data: dict = None) -> Response | None:
         kwargs["data"] = json.dumps(data)
 
     try:
-        response = requests.request(method, url, **kwargs)
+        response = requests.request(method, url, **kwargs, timeout=60)
         if response.status_code not in {HTTP_200_OK, HTTP_201_CREATED}:
             logger.error("%s %s error %d: %s", method, url, response.status_code, response.text)
         return response  # noqa: TRY300
