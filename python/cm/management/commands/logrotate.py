@@ -104,7 +104,7 @@ class Command(BaseCommand):
     def __execute_cmd(self, cmd):
         self.__log(f"executing cmd: `{cmd}`", "info")
         try:
-            out = check_output(cmd, shell=True, stderr=STDOUT)  # noqa: S602
+            out = check_output(cmd, shell=False, stderr=STDOUT)  # noqa: S602
             out = out.decode(settings.ENCODING_UTF_8).strip("\n")
             if out:
                 self.__log(out, "debug")
